@@ -8,10 +8,17 @@ def home():
 
 @app.route('/calculate', methods=['POST'])
 def calculate():
-    data = request.json
-    a = float(data['a'])
-    b = float(data['b'])
-    op = data['operation']
+    data = request.get_json()
+
+    if not data:
+        return jsonify({"error": "No input provided"}), 400
+
+    try:
+        a = float(data.get('a'))
+        b = float(data.get('b'))
+        op = data.get('operation')
+    except:
+        return jsonify({"error": "Invalid input"}), 400
 
     if op == 'add':
         result = a + b
@@ -20,11 +27,10 @@ def calculate():
     elif op == 'mul':
         result = a * b
     elif op == 'div':
-        result = a / b if b != 0 else "Cannot divide by zero"
+        if b == 0:
+            return jsonify({"error": "Cannot divide by zero"}), 400
+        result = a / b
     else:
-        return jsonify({"error": "Invalid operation"})
+        return jsonify({"error": "Invalid operation"}), 400
 
     return jsonify({"result": result})
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
